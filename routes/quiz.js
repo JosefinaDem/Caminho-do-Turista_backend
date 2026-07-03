@@ -22,6 +22,10 @@ router.post('/recommend', async (req, res) => {
     const data = await response.json();
     // Конвертуємо формат Groq у формат Anthropic щоб фронтенд не змінювати
     const text = data.choices?.[0]?.message?.content || '';
+
+    console.log('Groq response:', JSON.stringify(data).substring(0, 500));
+    console.log('Text extracted:', text.substring(0, 200));
+
     res.json({ content: [{ type: 'text', text }] });
   } catch (err) {
     console.error(err);

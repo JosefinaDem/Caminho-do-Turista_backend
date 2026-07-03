@@ -59,7 +59,7 @@ router.get('/ai-routes', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT r.*, u.Nome as UserNome 
-       FROM RotasIA r 
+       FROM rotasia r 
        JOIN Utilizadores u ON r.UtilizadorID = u.UtilizadorID 
        ORDER BY r.CreatedAt DESC`
     );
@@ -72,7 +72,7 @@ router.get('/ai-routes', authMiddleware, adminMiddleware, async (req, res) => {
 
 router.delete('/ai-routes/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    await pool.query('DELETE FROM RotasIA WHERE RotaIAID = ?', [req.params.id]);
+    await pool.query('DELETE FROM rotasia WHERE RotaIAID = ?', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Erro ao eliminar rota' });
@@ -84,9 +84,9 @@ router.get('/reviews', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT r.*, u.Nome as UserNome, ra.Titulo as RotaTitulo
-       FROM RotasIAReviews r
+       FROM rotasiareviews r
        JOIN Utilizadores u ON r.UtilizadorID = u.UtilizadorID
-       JOIN RotasIA ra ON r.RotaIAID = ra.RotaIAID
+       JOIN rotasia ra ON r.RotaIAID = ra.RotaIAID
        ORDER BY r.CreatedAt DESC`
     );
     res.json(rows);
@@ -98,7 +98,7 @@ router.get('/reviews', authMiddleware, adminMiddleware, async (req, res) => {
 
 router.delete('/reviews/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    await pool.query('DELETE FROM RotasIAReviews WHERE ReviewID = ?', [req.params.id]);
+    await pool.query('DELETE FROM rotasiareviews WHERE ReviewID = ?', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Erro ao eliminar review' });

@@ -33,26 +33,26 @@ router.post('/recommend', async (req, res) => {
 router.post('/save', authMiddleware, async (req, res) => {
   const { titulo, regiao, descricao, dificuldade, tipo, duracao, distancia, destaques, dica, sourceUrl, status, imageUrl } = req.body;
   await pool.query(
-  `INSERT INTO RotasIA (UtilizadorID, Titulo, Regiao, Descricao, Dificuldade, Tipo, Duracao, Distancia, Destaques, Dica, SourceURL, Status, ImageUrl)
+  `INSERT INTO rotasia (UtilizadorID, Titulo, Regiao, Descricao, Dificuldade, Tipo, Duracao, Distancia, Destaques, Dica, SourceURL, Status, ImageUrl)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   [req.user.id, titulo, regiao, descricao, dificuldade, tipo, duracao, distancia,
     JSON.stringify(destaques || []), dica, sourceUrl || null, status || 'planeada', imageUrl || null]
   );
   try {
     const [existing] = await pool.query(
-      'SELECT RotaIAID FROM RotasIA WHERE UtilizadorID = ? AND Titulo = ?',
+      'SELECT RotaIAID FROM rotasia WHERE UtilizadorID = ? AND Titulo = ?',
       [req.user.id, titulo]
       
     );
     if (existing.length > 0) {
       await pool.query(
-        'UPDATE RotasIA SET Status = ? WHERE RotaIAID = ?',
+        'UPDATE rotasia SET Status = ? WHERE RotaIAID = ?',
         [status || 'planeada', existing[0].RotaIAID]
       );
       return res.json({ success: true, updated: true });
     }
     await pool.query(
-      `INSERT INTO RotasIA (UtilizadorID, Titulo, Regiao, Descricao, Dificuldade, Tipo, Duracao, Distancia, Destaques, Dica, SourceURL, Status)
+      `INSERT INTO rotasia (UtilizadorID, Titulo, Regiao, Descricao, Dificuldade, Tipo, Duracao, Distancia, Destaques, Dica, SourceURL, Status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [req.user.id, titulo, regiao, descricao, dificuldade, tipo, duracao, distancia,
         JSON.stringify(destaques || []), dica, sourceUrl || null, status || 'planeada']
@@ -68,7 +68,7 @@ router.post('/save', authMiddleware, async (req, res) => {
 router.get('/saved', authMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM RotasIA WHERE UtilizadorID = ? ORDER BY CreatedAt DESC',
+      'SELECT * FROM rotasia WHERE UtilizadorID = ? ORDER BY CreatedAt DESC',
       [req.user.id]
     );
     res.json(rows);
@@ -82,18 +82,18 @@ router.get('/saved', authMiddleware, async (req, res) => {
 router.get('/saved/:id', authMiddleware, async (req, res) => {
   try {
     const [[route]] = await pool.query(
-      'SELECT * FROM RotasIA WHERE RotaIAID = ? AND UtilizadorID = ?',
+      'SELECT * FROM rotasia WHERE RotaIAID = ? AND UtilizadorID = ?',
       [req.params.id, req.user.id]
     );
     if (!route) return res.status(404).json({ error: 'Rota não encontrada' });
 
     const [fotos] = await pool.query(
-      'SELECT * FROM RotasIAFotos WHERE RotaIAID = ? ORDER BY CreatedAt ASC',
+      'SELECT * FROM rotasiafotos WHERE RotaIAID = ? ORDER BY CreatedAt ASC',
       [req.params.id]
     );
     const [reviews] = await pool.query(
       `SELECT r.*, u.Nome as UserNome, u.Avatar as UserAvatar 
-        FROM RotasIAReviews r 
+        FROM rotasiareviews r 
         JOIN Utilizadores u ON r.UtilizadorID = u.UtilizadorID
         WHERE r.RotaIAID = ? ORDER BY r.CreatedAt DESC`,
       [req.params.id]
@@ -110,7 +110,7 @@ router.post('/saved/:id/review', authMiddleware, async (req, res) => {
   const { rating, comentario, fotoUrl } = req.body;
   try {
     await pool.query(
-      'INSERT INTO RotasIAReviews (RotaIAID, UtilizadorID, Rating, Comentario, FotoUrl) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO rotasiareviews (RotaIAID, UtilizadorID, Rating, Comentario, FotoUrl) VALUES (?, ?, ?, ?, ?)',
       [req.params.id, req.user.id, rating, comentario, fotoUrl || null]
     );
     res.json({ success: true });
@@ -124,7 +124,7 @@ router.post('/saved/:id/foto', authMiddleware, async (req, res) => {
   const { fotoUrl, descricao } = req.body;
   try {
     await pool.query(
-      'INSERT INTO RotasIAFotos (RotaIAID, FotoUrl, Descricao) VALUES (?, ?, ?)',
+      'INSERT INTO rotasiafotos (RotaIAID, FotoUrl, Descricao) VALUES (?, ?, ?)',
       [req.params.id, fotoUrl, descricao || null]
     );
     res.json({ success: true });
@@ -172,7 +172,7 @@ router.post('/history', authMiddleware, async (req, res) => {
 router.delete('/saved/:id', authMiddleware, async (req, res) => {
   try {
     await pool.query(
-      'DELETE FROM RotasIA WHERE RotaIAID = ? AND UtilizadorID = ?',
+      'DELETE FROM rotasia WHERE RotaIAID = ? AND UtilizadorID = ?',
       [req.params.id, req.user.id]
     );
     res.json({ success: true });
@@ -186,7 +186,7 @@ router.put('/saved/:id/status', authMiddleware, async (req, res) => {
   const { status } = req.body;
   try {
     await pool.query(
-      'UPDATE RotasIA SET Status = ? WHERE RotaIAID = ? AND UtilizadorID = ?',
+      'UPDATE rotasia SET Status = ? WHERE RotaIAID = ? AND UtilizadorID = ?',
       [status, req.params.id, req.user.id]
     );
     res.json({ success: true });

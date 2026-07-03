@@ -94,7 +94,7 @@ router.get('/saved/:id', authMiddleware, async (req, res) => {
     const [reviews] = await pool.query(
       `SELECT r.*, u.Nome as UserNome, u.Avatar as UserAvatar 
         FROM rotasiareviews r 
-        JOIN Utilizadores u ON r.UtilizadorID = u.UtilizadorID
+        JOIN utilizadores u ON r.UtilizadorID = u.UtilizadorID
         WHERE r.RotaIAID = ? ORDER BY r.CreatedAt DESC`,
       [req.params.id]
     );
@@ -138,13 +138,13 @@ router.post('/saved/:id/foto', authMiddleware, async (req, res) => {
 router.get('/history', authMiddleware, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM HistoricoQuiz WHERE UtilizadorID = ? ORDER BY CreatedAt DESC',
+      'SELECT * FROM historicoquiz WHERE UtilizadorID = ? ORDER BY CreatedAt DESC',
       [req.user.id]
     );
     
     rows.forEach(r => {
       if (typeof r.Respostas === 'string') r.Respostas = JSON.parse(r.Respostas);
-      if (typeof r.Rotas === 'string') r.Rotas = JSON.parse(r.Rotas);
+      if (typeof r.rotas === 'string') r.rotas = JSON.parse(r.rotas);
     });
     res.json(rows);
   } catch (err) {
@@ -158,7 +158,7 @@ router.post('/history', authMiddleware, async (req, res) => {
   const { respostas, rotas } = req.body;
   try {
     await pool.query(
-      'INSERT INTO HistoricoQuiz (UtilizadorID, Respostas, Rotas) VALUES (?, ?, ?)',
+      'INSERT INTO historicoquiz (UtilizadorID, Respostas, rotas) VALUES (?, ?, ?)',
       [req.user.id, JSON.stringify(respostas), JSON.stringify(rotas || [])]
     );
     res.json({ success: true });

@@ -11,9 +11,9 @@ router.get('/', auth, async (req, res) => {
              r.DistanciaKm AS distance, r.ImagemPrincipal AS image,
              r.MediaRating AS rating, reg.Nome AS region,
              f.DataAdicionado AS addedAt
-      FROM Favoritos f
-      JOIN Rotas r   ON f.RotaID = r.RotaID
-      JOIN Regioes reg ON r.RegiaoID = reg.RegiaoID
+      FROM favoritos f
+      JOIN rotas r   ON f.RotaID = r.RotaID
+      JOIN regioes reg ON r.RegiaoID = reg.RegiaoID
       WHERE f.UtilizadorID = ?
       ORDER BY f.DataAdicionado DESC
     `, [req.user.id]);
@@ -29,7 +29,7 @@ router.get('/', auth, async (req, res) => {
 router.post('/:trailId', auth, async (req, res) => {
   try {
     await pool.query(
-      'INSERT IGNORE INTO Favoritos (UtilizadorID, RotaID) VALUES (?, ?)',
+      'INSERT IGNORE INTO favoritos (UtilizadorID, RotaID) VALUES (?, ?)',
       [req.user.id, req.params.trailId]
     );
     res.json({ success: true });
@@ -43,7 +43,7 @@ router.post('/:trailId', auth, async (req, res) => {
 router.delete('/:trailId', auth, async (req, res) => {
   try {
     await pool.query(
-      'DELETE FROM Favoritos WHERE UtilizadorID = ? AND RotaID = ?',
+      'DELETE FROM favoritos WHERE UtilizadorID = ? AND RotaID = ?',
       [req.user.id, req.params.trailId]
     );
     res.json({ success: true });

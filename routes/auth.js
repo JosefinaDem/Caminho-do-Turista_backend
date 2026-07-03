@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
 
   try {
     const [existing] = await pool.query(
-      'SELECT UtilizadorID FROM Utilizadores WHERE Email = ?', [email]
+      'SELECT UtilizadorID FROM utilizadores WHERE Email = ?', [email]
     );
     if (existing.length > 0) {
       return res.status(409).json({ error: 'Este email já está registado.' });
@@ -25,7 +25,7 @@ router.post('/register', async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
 
     const [result] = await pool.query(
-      'INSERT INTO Utilizadores (Nome, Email, PasswordHash) VALUES (?, ?, ?)',
+      'INSERT INTO utilizadores (Nome, Email, PasswordHash) VALUES (?, ?, ?)',
       [nome, email, hash]
     );
 
@@ -56,7 +56,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM Utilizadores WHERE Email = ? AND Ativo = 1', [email]
+      'SELECT * FROM utilizadores WHERE Email = ? AND Ativo = 1', [email]
     );
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Email ou palavra-passe incorretos.' });
@@ -69,7 +69,7 @@ router.post('/login', async (req, res) => {
     }
 
     await pool.query(
-      'UPDATE Utilizadores SET UltimoLogin = NOW() WHERE UtilizadorID = ?',
+      'UPDATE utilizadores SET UltimoLogin = NOW() WHERE UtilizadorID = ?',
       [user.UtilizadorID]
     );
 
@@ -109,7 +109,7 @@ router.put('/profile', authMiddleware, async (req, res) => {
   const { nome, bio, location, instagram, facebook, tiktok, reddit, threads, avatar } = req.body;
   try {
     await pool.query(
-      'UPDATE Utilizadores SET Nome = ?, Bio = ?, Localizacao = ?, Instagram = ?, Facebook = ?, TikTok = ?, Reddit = ?, Threads = ?, Avatar = ? WHERE UtilizadorID = ?',
+      'UPDATE utilizadores SET Nome = ?, Bio = ?, Localizacao = ?, Instagram = ?, Facebook = ?, TikTok = ?, Reddit = ?, Threads = ?, Avatar = ? WHERE UtilizadorID = ?',
       [nome, bio || null, location || null, instagram || null, facebook || null, tiktok || null, reddit || null, threads || null, avatar || null, req.user.id]
     );
     res.json({ success: true });

@@ -17,8 +17,8 @@ router.get('/', async (req, res) => {
              r.TesouroEscondido AS hidden, r.ImagemPrincipal AS image,
              r.MediaRating AS rating, r.TotalAvaliacoes AS totalReviews,
              reg.Nome AS region
-      FROM Rotas r
-      JOIN Regioes reg ON r.RegiaoID = reg.RegiaoID
+      FROM rotas r
+      JOIN regioes reg ON r.RegiaoID = reg.RegiaoID
       WHERE r.Ativo = 1
     `;
     const params = [];
@@ -59,8 +59,8 @@ router.get('/:id', async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT r.*, reg.Nome AS region
-      FROM Rotas r
-      JOIN Regioes reg ON r.RegiaoID = reg.RegiaoID
+      FROM rotas r
+      JOIN regioes reg ON r.RegiaoID = reg.RegiaoID
       WHERE r.RotaID = ? AND r.Ativo = 1
     `, [req.params.id]);
 
@@ -92,7 +92,7 @@ router.post('/:id/history', auth, async (req, res) => {
   const { estado } = req.body; // 'planeada', 'em_andamento', 'concluida'
   try {
     await pool.query(`
-      INSERT INTO HistoricoViagens (UtilizadorID, RotaID, Estado)
+      INSERT INTO historicoviagens (UtilizadorID, RotaID, Estado)
       VALUES (?, ?, ?)
       ON DUPLICATE KEY UPDATE Estado = VALUES(Estado)
     `, [req.user.id, req.params.id, estado || 'planeada']);
@@ -110,7 +110,7 @@ router.get('/:id/reviews', async (req, res) => {
     const [rows] = await pool.query(
       `SELECT a.*, u.Nome as UserNome, u.Avatar as UserAvatar
        FROM avaliacoes a
-       JOIN Utilizadores u ON a.UtilizadorID = u.UtilizadorID
+       JOIN utilizadores u ON a.UtilizadorID = u.UtilizadorID
        WHERE a.RotaID = ?
        ORDER BY a.DataAvaliacao DESC`,
       [req.params.id]
@@ -131,7 +131,7 @@ router.post('/:id/reviews', authMiddleware, async (req, res) => {
     );
     
     await pool.query(
-      `UPDATE Rotas SET 
+      `UPDATE rotas SET 
         TotalAvaliacoes = (SELECT COUNT(*) FROM avaliacoes WHERE RotaID = ?),
         MediaRating = (SELECT AVG(Rating) FROM avaliacoes WHERE RotaID = ?)
        WHERE RotaID = ?`,
@@ -195,9 +195,9 @@ router.get('/history/all', auth, async (req, res) => {
              r.DistanciaKm AS distance, r.ImagemPrincipal AS image,
              r.MediaRating AS rating, r.TotalAvaliacoes AS totalReviews,
              reg.Nome AS region, hv.Estado AS estado
-      FROM HistoricoViagens hv
-      JOIN Rotas r   ON hv.RotaID = r.RotaID
-      JOIN Regioes reg ON r.RegiaoID = reg.RegiaoID
+      FROM historicoviagens hv
+      JOIN rotas r   ON hv.RotaID = r.RotaID
+      JOIN regioes reg ON r.RegiaoID = reg.RegiaoID
       WHERE hv.UtilizadorID = ?
       ORDER BY hv.DataRegisto DESC
     `, [req.user.id]);
@@ -212,7 +212,7 @@ router.get('/history/all', auth, async (req, res) => {
 router.delete('/:id/history', auth, async (req, res) => {
   try {
     await pool.query(
-      'DELETE FROM HistoricoViagens WHERE UtilizadorID = ? AND RotaID = ?',
+      'DELETE FROM historicoviagens WHERE UtilizadorID = ? AND RotaID = ?',
       [req.user.id, req.params.id]
     );
     res.json({ success: true });

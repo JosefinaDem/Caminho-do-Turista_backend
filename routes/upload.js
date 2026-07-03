@@ -39,7 +39,7 @@ router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
     const avatarUrl = `http://localhost:3000/uploads/${req.file.filename}`;
 
     await pool.query(
-      'UPDATE Utilizadores SET Avatar = ? WHERE UtilizadorID = ?',
+      'UPDATE utilizadores SET Avatar = ? WHERE UtilizadorID = ?',
       [avatarUrl, req.user.id]
     );
 

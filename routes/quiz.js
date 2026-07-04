@@ -149,6 +149,7 @@ router.get('/history', authMiddleware, async (req, res) => {
     rows.forEach(r => {
       if (typeof r.Respostas === 'string') r.Respostas = JSON.parse(r.Respostas);
       if (typeof r.rotas === 'string') r.rotas = JSON.parse(r.rotas);
+      r.Rotas = r.rotas;
     });
     res.json(rows);
   } catch (err) {

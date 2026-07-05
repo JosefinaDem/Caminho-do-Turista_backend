@@ -202,22 +202,6 @@ router.put('/saved/:id/status', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/unsplash', async (req, res) => {
-  const { query } = req.query;
-  console.log('Unsplash request for:', query);
-  try {
-    const response = await fetch(
-      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=6&client_id=${process.env.UNSPLASH_ACCESS_KEY}`
-    );
-    console.log('Unsplash response status:', response.status);
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    console.error('Unsplash error:', err);
-    res.status(500).json({ error: 'Erro ao buscar fotos' });
-  }
-});
-
 router.delete('/history', authMiddleware, async (req, res) => {
   try {
     await pool.query('DELETE FROM historicoquiz WHERE UtilizadorID = ?', [req.user.id]);

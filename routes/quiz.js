@@ -229,4 +229,16 @@ router.delete('/history', authMiddleware, async (req, res) => {
 });
 
 
+router.get('/unsplash', async (req, res) => {
+  const { query } = req.query;
+  try {
+    const response = await fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&client_id=${process.env.UNSPLASH_ACCESS_KEY}`);
+    const data = await response.json();
+    res.json({ url: data?.urls?.regular || null });
+  } catch {
+    res.json({ url: null });
+  }
+});
+
+
 module.exports = router;

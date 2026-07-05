@@ -232,9 +232,10 @@ router.delete('/history', authMiddleware, async (req, res) => {
 router.get('/unsplash', async (req, res) => {
   const { query } = req.query;
   try {
-    const response = await fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&client_id=${process.env.UNSPLASH_ACCESS_KEY}`);
+    const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape&client_id=${process.env.UNSPLASH_ACCESS_KEY}`);
     const data = await response.json();
-    res.json({ url: data?.urls?.regular || null });
+    const url = data?.results?.[0]?.urls?.regular || null;
+    res.json({ url });
   } catch {
     res.json({ url: null });
   }

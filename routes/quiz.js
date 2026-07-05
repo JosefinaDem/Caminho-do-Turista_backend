@@ -218,4 +218,15 @@ router.get('/unsplash', async (req, res) => {
   }
 });
 
+router.delete('/history', authMiddleware, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM historicoquiz WHERE UtilizadorID = ?', [req.user.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao limpar histórico' });
+  }
+});
+
+
 module.exports = router;

@@ -36,7 +36,7 @@ router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
       return res.status(400).json({ error: 'Nenhum ficheiro enviado.' });
     }
 
-    const avatarUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+    const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
     await pool.query(
       'UPDATE utilizadores SET Avatar = ? WHERE UtilizadorID = ?',
@@ -58,7 +58,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'Nenhum ficheiro enviado.' });
     }
-    const url = `http://localhost:3000/uploads/${req.file.filename}`;
+    const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     res.json({ success: true, url });
   } catch (err) {
     console.error(err);

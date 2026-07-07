@@ -176,11 +176,12 @@ router.put('/:id/reviews/:reviewId', authMiddleware, async (req, res) => {
 router.get('/:id/photos', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM imagensrota WHERE RotaID = ? ORDER BY Principal DESC, DataUpload ASC',
+      'SELECT * FROM imagensrota WHERE RotaID = ?',
       [req.params.id]
     );
     res.json(rows);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Erro ao obter fotos' });
   }
 });

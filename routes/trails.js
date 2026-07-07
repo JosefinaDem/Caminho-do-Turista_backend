@@ -172,7 +172,6 @@ router.put('/:id/reviews/:reviewId', authMiddleware, async (req, res) => {
 });
 
 
-// GET fotos de uma rota
 router.get('/:id/photos', async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -182,7 +181,7 @@ router.get('/:id/photos', async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Erro ao obter fotos' });
+    res.status(500).json({ error: 'Erro ao obter fotos', details: err.message }); // тимчасово
   }
 });
 

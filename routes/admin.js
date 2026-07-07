@@ -47,9 +47,18 @@ router.put('/users/:id/ban', authMiddleware, adminMiddleware, async (req, res) =
 router.delete('/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
   if (req.params.id == req.user.id) return res.status(400).json({ error: 'Não podes eliminar a tua própria conta' });
   try {
-    await pool.query('DELETE FROM utilizadores WHERE UtilizadorID = ?', [req.params.id]);
+    const userId = req.params.id;
+    // Remove primeiro os registos dependentes, para evitar erro de chave estrangeira
+    await pool.query('DELETE FROM favoritos WHERE UtilizadorID = ?', [userId]);
+    await pool.query('DELETE FROM historicoviagens WHERE UtilizadorID = ?', [userId]);
+    await pool.query('DELETE FROM avaliacoes WHERE UtilizadorID = ?', [userId]);
+    await pool.query('DELETE FROM historicoquiz WHERE UtilizadorID = ?', [userId]);
+    await pool.query('DELETE FROM rotasiareviews WHERE UtilizadorID = ?', [userId]);
+    await pool.query('DELETE FROM rotasia WHERE UtilizadorID = ?', [userId]);
+    await pool.query('DELETE FROM utilizadores WHERE UtilizadorID = ?', [userId]);
     res.json({ success: true });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Erro ao eliminar utilizador' });
   }
 });

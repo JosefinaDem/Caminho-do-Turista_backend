@@ -1,42 +1,55 @@
 const express = require('express');
 const router  = express.Router();
 const multer  = require('multer');
-const path    = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const pool    = require('../db');
 const auth    = require('../middleware/auth');
 
-// Configuração do multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `avatar_${req.user.id}_${Date.now()}${ext}`);
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Storage para avatares
+const avatarStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'portugal-trails/avatars',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }]
   }
 });
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (allowed.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Apenas imagens são permitidas'));
-    }
+// Storage para imagens genéricas (reviews, etc.)
+const imageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'portugal-trails/uploads',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [{ width: 1200, crop: 'limit' }]
   }
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+const uploadImage = multer({
+  storage: imageStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // POST /api/upload/avatar
-router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
+router.post('/avatar', auth, uploadAvatar.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Nenhum ficheiro enviado.' });
     }
 
-    const avatarUrl = `https://${req.get('host')}/uploads/${req.file.filename}`;
+    const avatarUrl = req.file.path; // Cloudinary já devolve URL https completo
 
     await pool.query(
       'UPDATE utilizadores SET Avatar = ? WHERE UtilizadorID = ?',
@@ -51,21 +64,17 @@ router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
   }
 });
 
-
 // POST /api/upload — upload de imagem genérica
-router.post('/', auth, upload.single('image'), async (req, res) => {
+router.post('/', auth, uploadImage.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Nenhum ficheiro enviado.' });
     }
-      const url = `https://${req.get('host')}/uploads/${req.file.filename}`;
-      
-    res.json({ success: true, url });
+    res.json({ success: true, url: req.file.path });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao fazer upload.' });
   }
 });
 
-
-module.exports = router;    
+module.exports = router;

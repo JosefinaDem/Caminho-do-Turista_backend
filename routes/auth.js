@@ -68,14 +68,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Email ou palavra-passe incorretos.' });
     }
 
-    const valid = await bcrypt.compare(password, user.PasswordHash);
-if (!valid) {
-  return res.status(401).json({ error: 'Email ou palavra-passe incorretos.' });
-}
-
-if (user.Banned) {
-  return res.status(403).json({ error: 'A tua conta foi suspensa. Contacta o suporte para mais informações.' });
-}
+    
 
     await pool.query(
       'UPDATE utilizadores SET UltimoLogin = NOW() WHERE UtilizadorID = ?',

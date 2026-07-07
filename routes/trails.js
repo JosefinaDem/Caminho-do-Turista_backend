@@ -181,7 +181,7 @@ router.get('/:id/photos', async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Erro ao obter fotos', details: err.message }); // тимчасово
+    res.status(500).json({ error: 'Erro ao obter fotos' });
   }
 });
 

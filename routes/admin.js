@@ -48,7 +48,6 @@ router.delete('/users/:id', authMiddleware, adminMiddleware, async (req, res) =>
   if (req.params.id == req.user.id) return res.status(400).json({ error: 'Não podes eliminar a tua própria conta' });
   try {
     const userId = req.params.id;
-    // Remove primeiro os registos dependentes, para evitar erro de chave estrangeira
     await pool.query('DELETE FROM favoritos WHERE UtilizadorID = ?', [userId]);
     await pool.query('DELETE FROM historicoviagens WHERE UtilizadorID = ?', [userId]);
     await pool.query('DELETE FROM avaliacoes WHERE UtilizadorID = ?', [userId]);
@@ -59,7 +58,7 @@ router.delete('/users/:id', authMiddleware, adminMiddleware, async (req, res) =>
     res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Erro ao eliminar utilizador' });
+    res.status(500).json({ error: 'Erro ao eliminar utilizador', details: err.message }); // тимчасово
   }
 });
 
